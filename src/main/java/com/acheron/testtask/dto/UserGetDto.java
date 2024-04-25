@@ -1,4 +1,4 @@
-package com.acheron.testtask.dtos;
+package com.acheron.testtask.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

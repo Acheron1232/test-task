@@ -3,11 +3,10 @@
 --changeset artem:1
 CREATE TABLE users
 (
-    id           bigserial PRIMARY KEY,
+    id           bigserial primary key,
     first_name   text        not null,
     last_name    text        not null,
-    email        text UNIQUE not null,
-    password     text        not null,
+    email        text unique not null,
     phone_number text unique,
-    role         text        not null
+    birth_date   date        not null
 );

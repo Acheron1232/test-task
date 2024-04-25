@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class BirthDateValidatorTest {
@@ -12,37 +13,22 @@ class BirthDateValidatorTest {
 
     @Test
     void isValidShouldReturnTrueForPastDate() {
-        // Arrange
         LocalDate dateInPast = LocalDate.now().minusYears(1);
-
-        // Act
         boolean result = validator.isValid(dateInPast, null);
-
-        // Assert
-        assertTrue(result, "Validator should return true for dates in the past");
+        assertTrue(result);
     }
 
     @Test
     void isValidShouldReturnFalseForFutureDate() {
-        // Arrange
         LocalDate dateInFuture = LocalDate.now().plusDays(1);
-
-        // Act
         boolean result = validator.isValid(dateInFuture, null);
-
-        // Assert
-        assertFalse(result, "Validator should return false for dates in the future");
+        assertFalse(result);
     }
 
     @Test
     void isValidShouldReturnFalseForCurrentDate() {
-        // Arrange
         LocalDate currentDate = LocalDate.now();
-
-        // Act
         boolean result = validator.isValid(currentDate, null);
-
-        // Assert
-        assertFalse(result, "Validator should return false for the current date");
+        assertFalse(result);
     }
 }
