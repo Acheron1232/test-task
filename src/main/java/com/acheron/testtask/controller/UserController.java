@@ -23,17 +23,17 @@ public class UserController {
     }
 
     @PostMapping("/save")
-    public ResponseEntity<String> save(@RequestBody UserCreateUpdateDto userDto) {
+    public ResponseEntity<?> save(@RequestBody UserCreateUpdateDto userDto) {
         return userService.save(userDto);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<String> update(@PathVariable Long id, @RequestBody UserCreateUpdateDto userDto) {
+    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UserCreateUpdateDto userDto) {
         return userService.update(id, userDto);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<?> delete(@PathVariable Long id) {
         return userService.delete(id);
     }
 }

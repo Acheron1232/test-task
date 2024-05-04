@@ -12,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,38 +24,38 @@ public class UserService {
     @Value("${permitted-age}")
     private Integer age;
 
-    public ResponseEntity<String> save(UserCreateUpdateDto userDto) {
-        if ((LocalDate.now().getYear() - userDto.getBirthDate().getYear()) >= age) {
-            try {
-                User user = findByEmail(userDto.getEmail());
+    public ResponseEntity<?> save(UserCreateUpdateDto userDto) {
+        if (userAgeVerification(userDto)) {
+            User user = findByEmail(userDto.getEmail()).orElse(null);
+            if (user == null) {
+                User savedUser = userRepository.save(userMapper.mapUserDtoToUser(userDto));
+                return ResponseEntity.ok(userMapper.mapUserToUserGetDto(savedUser));
+            } else {
                 log.debug("User with Email: " + userDto.getEmail() + " already exists");
                 return ResponseEntity.badRequest().body("User already exists");
-            } catch (UserNotFoundException e) {
-                userRepository.save(userMapper.mapToUser(userDto));
-                return ResponseEntity.ok("Success");
             }
         } else return ResponseEntity.badRequest().body("Age must be over " + age);
     }
 
-    public ResponseEntity<String> update(Long id, UserCreateUpdateDto userDto) {
-        if ((LocalDate.now().getYear() - userDto.getBirthDate().getYear()) >= age) {
-            try {
-                User user = findById(id);
-                userRepository.save(userMapper.merge(userDto, user));
-                return ResponseEntity.ok("Success");
-            } catch (UserNotFoundException e) {
+    public ResponseEntity<?> update(Long id, UserCreateUpdateDto userDto) {
+        if (userAgeVerification(userDto)) {
+            User user = findById(id).orElse(null);
+            if (user != null) {
+                User savedUser = userRepository.save(userMapper.merge(userDto, user));
+                return ResponseEntity.ok(userMapper.mapUserToUserGetDto(savedUser));
+            } else {
                 log.debug("User with Id: " + id + " not found");
                 return ResponseEntity.badRequest().body("User with Id: " + id + " not found");
             }
         } else return ResponseEntity.badRequest().body("Age must be over " + age);
     }
 
-    public ResponseEntity<String> delete(Long id) {
-        try {
-            User user = findById(id);
+    public ResponseEntity<?> delete(Long id) {
+        User user = findById(id).orElse(null);
+        if (user != null) {
             userRepository.delete(user);
-            return ResponseEntity.ok("Success");
-        } catch (UserNotFoundException e) {
+            return ResponseEntity.ok(userMapper.mapUserToUserGetDto(user));
+        } else {
             log.debug("User with Id: " + id + " not found");
             return ResponseEntity.badRequest().body("User with Id: " + id + " not found");
         }
@@ -61,17 +63,21 @@ public class UserService {
 
     public ResponseEntity<?> searchByBirthDateRange(LocalDate start, LocalDate end) {
         if (end.isAfter(start)) {
-            return ResponseEntity.ok(userMapper.mapToUserGetDtoList(userRepository.findUsersByBirthDateBetween(start, end)));
+            return ResponseEntity.ok(userMapper.mapUserListToUserGetDtoList(userRepository.findUsersByBirthDateBetween(start, end)));
         } else {
-            return ResponseEntity.badRequest().body("the end date must be greater than the start date");
+            return ResponseEntity.badRequest().body("The end date must be greater than the start date");
         }
     }
 
-    public User findByEmail(String email) throws UserNotFoundException {
-        return userRepository.findUserByEmail(email).orElseThrow(() -> new UserNotFoundException(email));
+    public boolean userAgeVerification(UserCreateUpdateDto userDto) {
+        return userDto.getBirthDate().until(LocalDate.now(), ChronoUnit.YEARS) >= age;
     }
 
-    public User findById(Long id) throws UserNotFoundException {
-        return userRepository.findUserById(id).orElseThrow(() -> new UserNotFoundException(id));
+    public Optional<User> findByEmail(String email) {
+        return userRepository.findUserByEmail(email);
+    }
+
+    public Optional<User> findById(Long id) {
+        return userRepository.findUserById(id);
     }
 }

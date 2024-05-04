@@ -6,6 +6,11 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 
+/**
+ * In this test task userDto has no role,
+ * but for further extension of the program
+ * or in other cases userDto is an important component
+ */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

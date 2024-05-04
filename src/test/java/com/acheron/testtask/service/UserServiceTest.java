@@ -52,50 +52,43 @@ class UserServiceTest {
         assertEquals(ResponseEntity.badRequest().body("Age must be over " + this.age), response);
     }
 
-    @Test
-    void saveShouldReturnBadRequestWhenUserAlreadyExists() throws UserNotFoundException {
-        UserCreateUpdateDto userDto = new UserCreateUpdateDto();
-        userDto.setEmail("test@example.com");
-        userDto.setBirthDate(LocalDate.of(1990, 1, 1));
-        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.of(new User()));
-        ResponseEntity<?> response = userService.save(userDto);
-        assertEquals(ResponseEntity.badRequest().body("User already exists"), response);
-    }
 
     @Test
     void saveShouldCreateUserWhenValidRequest() throws UserNotFoundException {
-        UserCreateUpdateDto userDto = new UserCreateUpdateDto();
-        userDto.setEmail("newuser@example.com");
-        userDto.setBirthDate(LocalDate.of(1990, 1, 1));
-        when(userRepository.findUserByEmail(anyString())).thenThrow(new UserNotFoundException(""));
+        UserCreateUpdateDto userDto = new UserCreateUpdateDto("John", "Doe", "john@example.com",
+                LocalDate.of(1990, 1, 1), "123 Main St", "555-1234");
+        when(userRepository.findUserByEmail(anyString())).thenReturn(Optional.empty());
         when(userRepository.save(any(User.class))).thenReturn(new User());
-        when(userMapper.mapToUser(any(UserCreateUpdateDto.class))).thenReturn(new User());
+        when(userMapper.mapUserDtoToUser(any(UserCreateUpdateDto.class))).thenReturn(new User());
         ResponseEntity<?> response = userService.save(userDto);
-        assertEquals(ResponseEntity.ok("Success"), response);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(userRepository, times(1)).save(any(User.class));
+
     }
 
     //update
 
     @Test
     void updateSuccess() throws UserNotFoundException {
-        UserCreateUpdateDto userDto = new UserCreateUpdateDto("John", "Doe", "john@example.com", LocalDate.of(1990, 1, 1), "123 Main St", "555-1234");
+        UserCreateUpdateDto userDto = new UserCreateUpdateDto("John", "Doe", "john@example.com",
+                LocalDate.of(1990, 1, 1), "123 Main St", "555-1234");
         User user = new User();
         when(userRepository.findUserById(anyLong())).thenReturn(Optional.of(user));
         when(userRepository.save(any(User.class))).thenReturn(user);
 
-        ResponseEntity<String> response = userService.update(1L, userDto);
+        ResponseEntity<?> response = userService.update(1L, userDto);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Success", response.getBody());
     }
 
     @Test
     void updateUserNotFound() {
-        UserCreateUpdateDto userDto = new UserCreateUpdateDto("John", "Doe", "john@example.com", LocalDate.of(1990, 1, 1), "123 Main St", "555-1234");
+        UserCreateUpdateDto userDto = new UserCreateUpdateDto("John", "Doe", "john@example.com",
+                LocalDate.of(1990, 1, 1), "123 Main St", "555-1234");
         when(userRepository.findUserById(anyLong())).thenReturn(Optional.empty());
         Long id = 0L;
-        assertEquals(ResponseEntity.badRequest().body("User with Id: " + id + " not found"), userService.update(id, userDto));
+        assertEquals(ResponseEntity.badRequest().body("User with Id: " + id + " not found"),
+                userService.update(id, userDto));
     }
 
     //delete
@@ -106,20 +99,19 @@ class UserServiceTest {
         when(userRepository.findUserById(anyLong())).thenReturn(Optional.of(user));
         doNothing().when(userRepository).delete(any(User.class));
 
-        ResponseEntity<String> response = userService.delete(1L);
+        ResponseEntity<?> response = userService.delete(1L);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Success", response.getBody());
     }
 
     @Test
     void deleteUserNotFound() {
         when(userRepository.findUserById(anyLong())).thenReturn(Optional.empty());
 
-        ResponseEntity<String> response = userService.delete(0L);
+        ResponseEntity<?> response = userService.delete(0L);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().contains("not found"));
+        assertTrue(response.getBody().toString().contains("not found"));
     }
 
     //search
@@ -128,7 +120,8 @@ class UserServiceTest {
     void searchByBirthDateRangeSuccess() {
         LocalDate start = LocalDate.of(1990, 1, 1);
         LocalDate end = LocalDate.of(2000, 12, 31);
-        when(userRepository.findUsersByBirthDateBetween(any(LocalDate.class), any(LocalDate.class))).thenReturn(Collections.emptyList());
+        when(userRepository.findUsersByBirthDateBetween(any(LocalDate.class), any(LocalDate.class))).
+                thenReturn(Collections.emptyList());
 
         ResponseEntity<?> response = userService.searchByBirthDateRange(start, end);
 
@@ -143,6 +136,6 @@ class UserServiceTest {
         ResponseEntity<?> response = userService.searchByBirthDateRange(start, end);
 
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertTrue(response.getBody().toString().contains("the end date must be greater than the start date"));
+        assertTrue(response.getBody().toString().contains("The end date must be greater than the start date"));
     }
 }

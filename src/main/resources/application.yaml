@@ -3,3 +3,4 @@ spring:
     name: test-task
 
 permitted-age: 18
+

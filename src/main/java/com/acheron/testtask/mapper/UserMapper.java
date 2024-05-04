@@ -10,7 +10,19 @@ import java.util.List;
 @Component
 public class UserMapper {
 
-    public User mapToUser(UserCreateUpdateDto userDto) {
+    public UserGetDto mapUserToUserGetDto(User user) {
+        return new UserGetDto(
+                user.getId(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getEmail(),
+                user.getBirthDate(),
+                user.getAddress(),
+                user.getPhoneNumber()
+        );
+    }
+
+    public User mapUserDtoToUser(UserCreateUpdateDto userDto) {
         return new User(
                 null,
                 userDto.getFirstName(),
@@ -32,7 +44,7 @@ public class UserMapper {
         return user;
     }
 
-    public List<UserGetDto> mapToUserGetDtoList(List<User> users) {
+    public List<UserGetDto> mapUserListToUserGetDtoList(List<User> users) {
         return users.stream().map(user -> new UserGetDto(
                 user.getId(),
                 user.getFirstName(),

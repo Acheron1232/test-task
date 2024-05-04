@@ -1,7 +1,7 @@
 -- --liquibase formatted sql
 
 --changeset artem:1
-CREATE TABLE users
+create table users
 (
     id           bigserial primary key,
     first_name   text        not null,
